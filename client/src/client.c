@@ -1,5 +1,7 @@
 #include "client.h"
 
+t_log* logger;
+
 int main(void)
 {
 	/*---------------------------------------------------PARTE 2-------------------------------------------------------------*/
@@ -9,7 +11,6 @@ int main(void)
 	char* puerto;
 	char* valor;
 
-	t_log* logger;
 	t_config* config;
 
 	/* ---------------- LOGGING ---------------- */
@@ -19,6 +20,7 @@ int main(void)
 	// Usando el logger creado previamente
 	// Escribi: "Hola! Soy un log"
 
+	log_info(logger, "Hola! Soy un log");
 
 	/* ---------------- ARCHIVOS DE CONFIGURACION ---------------- */
 
@@ -28,6 +30,8 @@ int main(void)
 	// dejamos en las variables 'ip', 'puerto' y 'valor'
 
 	// Loggeamos el valor de config
+	valor = config_get_string_value(config, "CLAVE");
+	log_info(logger, "El valor de CLAVE es: %s", valor);
 
 
 	/* ---------------- LEER DE CONSOLA ---------------- */
@@ -54,14 +58,20 @@ int main(void)
 
 t_log* iniciar_logger(void)
 {
-	t_log* nuevo_logger;
+	t_log* nuevo_logger = log_create("tp0.log", "tp0", true, LOG_LEVEL_INFO);
 
 	return nuevo_logger;
 }
 
 t_config* iniciar_config(void)
 {
-	t_config* nuevo_config;
+	char* config_file = "cliente.config";
+	t_config* nuevo_config = config_create(config_file);
+
+	if(nuevo_config == NULL){
+        log_error(logger, "Error obteniendo las configuraciones de %s", config_file);
+        abort();
+    }
 
 	return nuevo_config;
 }
@@ -97,4 +107,6 @@ void terminar_programa(int conexion, t_log* logger, t_config* config)
 {
 	/* Y por ultimo, hay que liberar lo que utilizamos (conexion, log y config) 
 	  con las funciones de las commons y del TP mencionadas en el enunciado */
+	log_destroy(logger);
+	config_destroy(config);
 }
